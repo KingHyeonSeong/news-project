@@ -24,7 +24,7 @@ df['seendate'] = pd.to_datetime(df['seendate'])
 st.title("기업별 날짜에 따른 감성 지수 변화")  
 
 # 사용자로부터 선택할 기업 옵션을 드롭다운으로 제공
-organization = st.selectbox("기업을 선택하세요.", ['Microsoft', 'Apple'])  
+organization = st.selectbox("기업을 선택하세요.", ['Microsoft', 'Google'])  
 
 # 선택된 기업의 데이터만 필터링
 selected_df = df.loc[df['organization'] == organization].set_index('seendate')  

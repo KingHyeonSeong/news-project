@@ -7,8 +7,14 @@ from newspaper import Article
 from pymongo import MongoClient
 
 import datetime
+import json
 
-OPENAI_API_KEY = config.OPENAI_API_KEY
+from dotenv import load_dotenv
+import os
+load_dotenv()
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+print(OPENAI_API_KEY)
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
 model = "gpt-4o-mini"
 gd = GdeltDoc()
@@ -29,6 +35,7 @@ def chatgpt_generate(query):
   }]
   response = openai_client.chat.completions.create(model=model, messages = messages)
   answer = response.choices[0].message.content
+  print("chatgpt_generate")
   return answer
 
 # GDELT API를 이용하여 뉴스 기사 URL 가져오기
@@ -42,6 +49,7 @@ def get_url(keyword):
     country = "US",
   )  
   articles = gd.article_search(f)
+  print("get_url")
   return articles
 
 # 뉴스 기사 URL을 이용하여 뉴스 기사 내용 가져오기
@@ -54,6 +62,7 @@ def get_article(df):
     article.download()
     article.parse()
     texts.append(article.text)
+  print("get_article")
   return texts, titles
 
 def analysis():
@@ -68,7 +77,7 @@ def analysis():
       news_item = {}  # 개별 뉴스 아이템을 저장할 딕셔너리
       answer = chatgpt_generate(prompt_template + text)  # GPT 모델로 기사 분석
       try:
-          answer_list = eval(answer)  # GPT 응답을 리스트 형태로 변환 
+          answer_list = eval(answer)  # GPT 응답을 리스트 형태로 변환
           news_item["text"] = text  # 기사 본문 저장
           news_item["title"] = titles[idx]  # 기사 제목 저장
           [item.update({"seendate": dates[idx]}) for item in answer_list]  # 응답 리스트에 기사 날짜 추가
@@ -77,6 +86,7 @@ def analysis():
           insert_id = collection.insert_one(news_item).inserted_id  # MongoDB에 데이터 삽입 후 ID 반환
           print(insert_id)  # 삽입된 데이터의 ID 출력
       except:
+          print("error")
           continue  # 에러 발생 시 해당 루프를 건너뜀
 
   return  # 함수 종료
